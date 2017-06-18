@@ -20,6 +20,7 @@
 #include "SRTMFileDescriptor.h"
 #include "SRTMHeightFileReader.h"
 #include "SRTMStatisticsMethods.h"
+#include "SRTMVoxelGenerator.h"
 
 using namespace std;
 
@@ -97,23 +98,61 @@ int main(int argc, const char * argv[])
 
 					if (matchingDescriptor) {
 						SRTMHeightFileReader reader;
-						short ** heights = reader.readHRTFileIntoBuffer(descriptor.unzippedPath());
+						SRTMHeightFileDescriptor heightsDescriptor
+							= reader.readHRTFileIntoBuffer(descriptor.unzippedPath());
+
+						short **heights = heightsDescriptor.heights;
+
+						/*for (int h = 0; h < SRTM_TILE_HEIGHT - 120; h+=40) {
+							for (int w = 0; w < SRTM_TILE_WIDTH - 120; w+=40) {
+
+								vector<short> forOutlinersTest;
+
+								for (int b = 0; b < 120; b++) {
+									short *subarray = heights[h+b];
+									//bod A je y = h, x = w, bod B je y = h, x = w+16, C je y = h+16, x = w, bod D je y = h+16, x = w+16
+									forOutlinersTest.insert(forOutlinersTest.begin() + (b* 120), subarray + w, subarray + w + 120);
+								}
+
+								SRTMStatisticsMethods statistics;
+								vector<short> values = statistics.checkForOutliersUsingIQR(forOutlinersTest);
+
+								
+							}
+						}*/
 
 						//TODO: Populating real numbers for outliers
-						vector<short> original = { 5, 20, 3, 8, 11, 300, 50, 3,12,13,5,8,11,20,-50,30,11,50,48,12,33,6,7,99,33 };
+					//	vector<short> original = { 5, 20, 3, 8, 11, 300, 50, 3,12,13,5,8,11,20,-50,30,11,50,48,12,33,6,7,99,33 };
 					//	vector<short> original = { 5, 6, 7, 8, 9, 10 };
 
-
-						SRTMStatisticsMethods statistics;
+					/*	SRTMStatisticsMethods statistics;
 						vector<short> values = statistics.checkForOutliersUsingIQR(original);
 
 						for (int i = 0; i < values.size(); i++)
 						{
-							cout << values.at(i) << " " ;
+							cout << values.at(i) << "," ;
 						}
-						cout << "\n";
+						cout << "\n";*/
 
-						//TODO: Process heights	
+
+						SRTMVoxelGenerator generator;
+						ofstream mapFile(descriptor.mapPath(), ios::out | ios::binary);
+
+						for (int h = 0; h < SRTM_TILE_HEIGHT; h ++) {
+							for (int w = 0; w < SRTM_TILE_WIDTH; w ++) {
+								SRTMVoxelGeneratorDescriptor descriptor;
+								descriptor.currentHeight = h;
+								descriptor.currentWidth = w;	
+								descriptor.lowestPoint = heightsDescriptor.lowestPoint;
+
+								//SRTMVoxelBlock block = generator.generateVoxelBlock(heights, descriptor);
+								//mapFile.write((char*)&block, sizeof(block));
+								generator.writeBlockDirectyIntoStream(mapFile, heights, descriptor);
+								
+							}
+						}
+						mapFile.close();
+						
 
 						for (int h = 0; h < SRTM_TILE_HEIGHT; h++) {
 							delete[] heights[h];

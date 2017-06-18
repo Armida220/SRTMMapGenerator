@@ -30,5 +30,7 @@ public:
 	bool fillFromMatchingGroups(boost::match_results<std::string::const_iterator>);
 	string unzippedFile();
 	string unzippedPath();
+	string mapFile();
+	string mapPath();
 };
 

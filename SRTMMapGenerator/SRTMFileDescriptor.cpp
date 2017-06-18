@@ -43,4 +43,23 @@ string SRTMFileDescriptor::unzippedPath()
 }
 
 
+string SRTMFileDescriptor::mapFile()
+{
+	string mapFile;
+	mapFile.append(latitudeDirection);
+	mapFile.append(latitude);
+	mapFile.append(longtitudeDirection);
+	mapFile.append(longtitude);
+	mapFile.append(".vxlmap");
+	return mapFile;
+}
+
+string SRTMFileDescriptor::mapPath()
+{
+	string mapPath;
+	mapPath.append(parentFolder);
+	mapPath.append(mapFile());
+	return mapPath;
+}
+
 
